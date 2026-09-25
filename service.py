@@ -1,11 +1,11 @@
-from observability import PrincipalObservabilityMiddleware
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
 from opentelemetry import trace
+from pydantic import BaseModel, Field
+
 from observability import (
+    PrincipalObservabilityMiddleware,
     configure_observability,
     get_logger,
-    PrincipalObservabilityMiddleware,
 )
 from rag_domain import chunk_document, lexical_retrieve
 

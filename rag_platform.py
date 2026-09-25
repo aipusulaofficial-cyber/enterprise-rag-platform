@@ -1,7 +1,8 @@
 """Enterprise RAG domain core: deterministic retrieval contracts with citations."""
 
+import re
+import sys
 from dataclasses import dataclass
-import re, sys
 
 
 @dataclass(frozen=True)
