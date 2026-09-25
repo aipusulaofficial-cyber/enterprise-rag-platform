@@ -1,3 +1,4 @@
+from observability import PrincipalObservabilityMiddleware
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from opentelemetry import trace
@@ -8,6 +9,7 @@ configure_observability()
 logger = get_logger(__name__)
 
 app = FastAPI(title="enterprise-rag-platform", version="1.0.0")
+app.add_middleware(PrincipalObservabilityMiddleware)
 tracer = trace.get_tracer("enterprise-rag-platform")
 
 
