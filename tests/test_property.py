@@ -9,7 +9,7 @@ client = TestClient(app)
 
 @given(
     st.text(
-        alphabet=st.characters(blacklist_categories=("Cs",)  # type: ignore[arg-type]),
+        alphabet=st.characters(blacklist_categories=("Cs",),  # type: ignore[arg-type]),
         min_size=1,
         max_size=64,
     ).filter(lambda value: bool(value.strip()))
