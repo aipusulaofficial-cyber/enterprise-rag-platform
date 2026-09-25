@@ -1,5 +1,7 @@
 """OpenTelemetry bootstrap; no-op compatible when collector is absent."""
 
+import logging
+
 from opentelemetry import trace
 
 try:
@@ -12,6 +14,6 @@ try:
     )
     provider.add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
     trace.set_tracer_provider(provider)
-except Exception:
-    pass
+except (ImportError, RuntimeError) as exc:
+    logging.getLogger(__name__).warning("OpenTelemetry setup unavailable: %s", exc)
 tracer = trace.get_tracer("enterprise-rag-platform")
