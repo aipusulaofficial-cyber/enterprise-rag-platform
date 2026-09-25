@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: enterprise-rag-platform}
+spec:
+ replicas: 2
+ selector: {matchLabels: {app: enterprise-rag-platform}}
+ template:
+  metadata: {labels: {app: enterprise-rag-platform}}
+  spec:
+   containers:
+    - name: api
+      image: enterprise-rag-platform:latest
+      ports: [{containerPort: 8000}]
+      readinessProbe: {httpGet: {path: /health/ready, port: 8000}}
+      livenessProbe: {httpGet: {path: /health/live, port: 8000}}
+      resources: {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: "1", memory: 512Mi}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: enterprise-rag-platform}
+spec:
+ selector: {app: enterprise-rag-platform}
+ ports: [{port: 80, targetPort: 8000}]
