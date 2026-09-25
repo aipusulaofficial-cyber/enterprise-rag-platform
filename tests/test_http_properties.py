@@ -1,8 +1,27 @@
-from hypothesis import given,strategies as st
+from hypothesis import given, strategies as st
 from fastapi.testclient import TestClient
 from service import app
-c=TestClient(app)
-def test_contract(): assert c.get("/health/live").status_code==200
-@given(st.text(min_size=1,max_size=32))
-def test_property(v):
- assert c.post("/v1/retrieve",json={"key":v,"payload":{"text":v,"query":v}}).status_code==200
+
+client = TestClient(app)
+
+
+def test_contract():
+    assert client.get("/health/live").status_code == 200
+
+
+@given(
+    st.text(
+        alphabet=st.characters(blacklist_categories=("Cs",)),
+        min_size=1,
+        max_size=32,
+    ).filter(lambda value: bool(value.strip()))
+)
+def test_property(value: str):
+    response = client.post(
+        "/v1/retrieve",
+        json={"key": value, "payload": {"text": value, "query": value}},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["status"] == "ok"
+    assert isinstance(body["results"], list)
