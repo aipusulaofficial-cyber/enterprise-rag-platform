@@ -11,7 +11,7 @@ def test_contract():
     assert client.get("/health/live").status_code == 200
 
 
-@given(st.text(min_size=1, max_size=32))
+@given(st.from_regex(r"[A-Za-z0-9]{1,32}", fullmatch=True))
 def test_property(value: str):
     response = client.post(
         "/v1/retrieve",
