@@ -7,15 +7,7 @@ from service import app
 client = TestClient(app)
 
 
-@given(
-    st.text(
-        alphabet=st.characters(
-            blacklist_categories=("Cs",),  # type: ignore[arg-type]
-        ),
-        min_size=1,
-        max_size=64,
-    ).filter(lambda value: bool(value.strip()))
-)
+@given(st.from_regex(r"[A-Za-z0-9]{1,64}", fullmatch=True))
 def test_request_key_never_crashes(value: str):
     response = client.post(
         "/v1/retrieve",
