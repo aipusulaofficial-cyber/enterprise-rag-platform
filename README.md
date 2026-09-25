@@ -1,14 +1,26 @@
-# enterprise-rag-platform
+# Enterprise RAG Platform
 
-Production-oriented reference implementation focused on reliable AI systems engineering.
+**Principal-level reference implementation** focused on retrieval-augmented generation boundaries, adapter isolation, deterministic failure handling, and production readiness.
 
-## Engineering focus
+## Engineering intent
+- Clear domain boundaries and replaceable infrastructure adapters
+- Explicit contracts, validation, and failure semantics
+- Deterministic tests with external dependencies isolated
+- Operational readiness through health checks, CI, and security validation
+- Architecture decisions documented so trade-offs are reviewable
 
-- Explicit domain boundaries and replaceable adapters
-- Deterministic behavior with failure semantics covered by tests
-- Operational readiness: health checks and CI
-- Documented production trade-offs and extension points
+## System design
+The repository is structured around a small set of explicit responsibilities rather than framework-driven coupling. Request/event handling, domain policy, infrastructure adapters, and operational concerns are kept separable so individual components can evolve without forcing a system-wide rewrite.
 
-This repository is a runnable foundation rather than a collection of pseudocode.
+## Quality bar
+- **Correctness:** contract and edge-case tests cover expected and failure paths
+- **Reliability:** bounded work, explicit timeouts/failures, and health signals where applicable
+- **Security:** least-privilege boundaries, input validation, and safe defaults
+- **Observability:** correlation/context propagation and actionable operational signals
+- **Delivery:** reproducible CI validation before changes are considered complete
 
-See `ARCHITECTURE.md` and `ADRs/0001-production-boundaries.md`.
+## Architecture & decisions
+See [ARCHITECTURE.md](ARCHITECTURE.md) and the ADRs directory for system boundaries, key trade-offs, and extension points.
+
+## Engineering principle
+The goal is not to maximize framework complexity; it is to make important behavior **explicit, testable, observable, and replaceable**.
