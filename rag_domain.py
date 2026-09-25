@@ -19,9 +19,7 @@ def chunk_document(document_id: str, text: str, size: int = 512) -> list[Chunk]:
     ]
 
 
-def lexical_retrieve(
-    query: str, chunks: list[Chunk], top_k: int = 5
-) -> list[tuple[Chunk, float]]:
+def lexical_retrieve(query: str, chunks: list[Chunk], top_k: int = 5) -> list[tuple[Chunk, float]]:
     terms = set(query.lower().split())
     if not terms or top_k < 1:
         return []
