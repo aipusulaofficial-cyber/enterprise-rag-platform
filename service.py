@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from opentelemetry import trace
 from observability import configure_observability, get_logger
 from rag_domain import chunk_document, lexical_retrieve
@@ -13,7 +13,7 @@ tracer = trace.get_tracer("enterprise-rag-platform")
 
 class RetrieveRequest(BaseModel):
     key: str
-    payload: dict = {}
+    payload: dict = Field(default_factory=dict)
 
 
 @app.get("/health/live")
