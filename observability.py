@@ -1,11 +1,16 @@
 import json
 import logging
 import os
+import time
+import uuid
 
+from fastapi import Request
 from opentelemetry import trace
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 
 def configure_observability():
@@ -47,20 +52,12 @@ class JsonFormatter(logging.Formatter):
 
 
 def get_logger(name):
-    h = logging.StreamHandler()
-    h.setFormatter(JsonFormatter())
-    l = logging.getLogger(name)
-    l.handlers[:] = [h]
-    l.setLevel(os.getenv("LOG_LEVEL", "INFO"))
-    return l
-
-
-import time
-import uuid
-
-from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
+    handler = logging.StreamHandler()
+    handler.setFormatter(JsonFormatter())
+    logger = logging.getLogger(name)
+    logger.handlers[:] = [handler]
+    logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
+    return logger
 
 
 class PrincipalObservabilityMiddleware(BaseHTTPMiddleware):
@@ -77,6 +74,11 @@ class PrincipalObservabilityMiddleware(BaseHTTPMiddleware):
                 span.set_attribute("correlation_id", correlation_id)
                 response = await call_next(request)
                 status = response.status_code
+                response.headers["x-request-id"] = request_id
+                response.headers["x-correlation-id"] = correlation_id
+                response.headers["x-latency-ms"] = (
+                    f"{(time.perf_counter() - start) * 1000:.3f}"
+                )
                 return response
         except Exception as exc:
             error_type = type(exc).__name__
