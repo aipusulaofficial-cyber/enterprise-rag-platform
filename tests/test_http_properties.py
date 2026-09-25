@@ -18,6 +18,7 @@ def test_contract():
         max_size=32,
     ).filter(lambda value: bool(value.strip()))
 )
+
 def test_property(value: str):
     response = client.post(
         "/v1/retrieve",
