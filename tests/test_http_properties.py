@@ -1,0 +1,8 @@
+from fastapi.testclient import TestClient
+from hypothesis import given,strategies as st
+from service import app
+c=TestClient(app)
+def test_contract(): assert c.get("/health/live").status_code==200 and c.get("/health/ready").json()["status"]=="ready"
+@given(st.text(min_size=1,max_size=64))
+def test_property(value):
+ r=c.post("/v1/retrieval",json={"key":value});assert r.status_code==200
