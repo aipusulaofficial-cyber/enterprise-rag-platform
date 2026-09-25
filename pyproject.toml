@@ -9,3 +9,6 @@ testpaths = ["tests"]
 
 [tool.setuptools]
 py-modules=["service"]
+
+[tool.setuptools]
+py-modules=["service"]
