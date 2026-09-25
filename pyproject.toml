@@ -17,4 +17,4 @@ testpaths = ["tests"]
 pythonpath = ["."]
 
 [tool.setuptools]
-py-modules = ["service"]
+py-modules = ["service", "rag_domain"]
