@@ -1,4 +1,6 @@
-from rag_platform import *
+import pytest
+
+from rag_platform import Chunk, Document, RetrievalThresholdError, Retriever, chunk_document
 
 
 def test_chunk_overlap_and_identity():
@@ -14,14 +16,10 @@ def test_retrieval_returns_citations():
 
 
 def test_empty_query_fails():
-    import pytest
-
     with pytest.raises(ValueError):
         Retriever([]).retrieve(" ")
 
 
 def test_threshold_failure_is_explicit():
-    import pytest
-
     with pytest.raises(RetrievalThresholdError):
         Retriever([Chunk("x", "d", "hello", "s")], 0.9).retrieve("security")
