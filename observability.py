@@ -72,9 +72,7 @@ class PrincipalObservabilityMiddleware(BaseHTTPMiddleware):
         error_type = None
         tracer = trace.get_tracer("principal-http")
         try:
-            with tracer.start_as_current_span(
-                f"{request.method} {request.url.path}"
-            ) as span:
+            with tracer.start_as_current_span(f"{request.method} {request.url.path}") as span:
                 span.set_attribute("request_id", request_id)
                 span.set_attribute("correlation_id", correlation_id)
                 response = await call_next(request)
