@@ -11,14 +11,7 @@ def test_contract():
     assert client.get("/health/live").status_code == 200
 
 
-@given(
-    st.text(
-        alphabet=st.characters(blacklist_categories=("Cs",),  # type: ignore[arg-type]),
-        min_size=1,
-        max_size=32,
-    ).filter(lambda value: bool(value.strip()))
-)
-
+@given(st.text(min_size=1, max_size=32))
 def test_property(value: str):
     response = client.post(
         "/v1/retrieve",
