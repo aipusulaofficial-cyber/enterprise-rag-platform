@@ -1,21 +1,62 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from opentelemetry import trace
-from rag_domain import *
-try:
- from opentelemetry.sdk.resources import Resource
- from opentelemetry.sdk.trace import TracerProvider
- from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
- p=TracerProvider(resource=Resource.create({"service.name":"enterprise-rag-platform"}));p.add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()));trace.set_tracer_provider(p)
-except Exception: pass
-app=FastAPI(title="enterprise-rag-platform",version="1.0.0");tracer=trace.get_tracer("enterprise-rag-platform")
-class Request(BaseModel): key:str; payload:dict={}
+from observability import configure_observability, get_logger
+from rag_domain import chunk_document, lexical_retrieve
+
+configure_observability()
+logger = get_logger(__name__)
+
+app = FastAPI(title="enterprise-rag-platform", version="1.0.0")
+tracer = trace.get_tracer("enterprise-rag-platform")
+
+
+class RetrieveRequest(BaseModel):
+    key: str
+    payload: dict = {}
+
+
 @app.get("/health/live")
-def live(): return {"status":"ok"}
+def live():
+    return {"status": "ok"}
+
+
 @app.get("/health/ready")
-def ready(): return {"status":"ready"}
+def ready():
+    return {"status": "ready"}
+
+
 @app.post("/v1/retrieve")
-def handle(r:Request):
- with tracer.start_as_current_span("enterprise-rag-platform.domain"):
-  try: chunks=chunk_document(r.key,r.payload.get("text","")); hits=lexical_retrieve(r.payload.get("query",r.key),chunks); return {"status":"ok","results":[{"text":c.text,"score":s,"document_id":c.document_id,"chunk":c.index} for c,s in hits]}
-  except (ValueError,KeyError) as e: raise HTTPException(status_code=400,detail=str(e)) from e
+def handle(request: RetrieveRequest):
+    with tracer.start_as_current_span("rag.retrieve") as span:
+        span.set_attribute("rag.document_id", request.key)
+        try:
+            text = request.payload.get("text", "")
+            query = request.payload.get("query", request.key)
+            chunks = chunk_document(request.key, text)
+            hits = lexical_retrieve(query, chunks)
+            logger.info(
+                "rag_retrieval document_id=%s query_terms=%d hits=%d",
+                request.key,
+                len(query.split()),
+                len(hits),
+            )
+            return {
+                "status": "ok",
+                "results": [
+                    {
+                        "text": chunk.text,
+                        "score": score,
+                        "document_id": chunk.document_id,
+                        "chunk": chunk.index,
+                    }
+                    for chunk, score in hits
+                ],
+            }
+        except (ValueError, KeyError) as exc:
+            logger.warning(
+                "rag_request_rejected document_id=%s reason=%s",
+                request.key,
+                exc,
+            )
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
