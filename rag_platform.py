@@ -66,9 +66,7 @@ class Retriever:
             ((lexical_score(query, c.text), c) for c in self.chunks),
             key=lambda x: (-x[0], x[1].id),
         )
-        hits = [Citation(c.id, c.source, s) for s, c in scored if s >= self.threshold][
-            :k
-        ]
+        hits = [Citation(c.id, c.source, s) for s, c in scored if s >= self.threshold][:k]
         if not hits:
             raise RetrievalThresholdError("no grounded chunks met threshold")
         return hits
