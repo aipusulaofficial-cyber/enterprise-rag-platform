@@ -1,4 +1,8 @@
-from rag_domain import *
+from rag_domain import chunk_document, lexical_retrieve
+
+
 def test_chunk_and_retrieve():
- c=chunk_document("d","alpha beta gamma alpha",2); assert len(c)==2
- assert lexical_retrieve("alpha",c)[0][0].document_id=="d"
+    text = "alpha beta gamma alpha " * 20
+    chunks = chunk_document("d", text, 32)
+    assert len(chunks) == 3
+    assert lexical_retrieve("alpha", chunks)[0][0].document_id == "d"
