@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from opentelemetry import trace
 from pydantic import BaseModel, Field
+
 from observability import (
     PrincipalObservabilityMiddleware,
     configure_observability,
