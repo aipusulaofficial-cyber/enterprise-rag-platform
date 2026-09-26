@@ -26,3 +26,5 @@ Input validation, least-privilege boundaries and security CI protect the service
 [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/PRINCIPAL-ENGINEERING.md](docs/PRINCIPAL-ENGINEERING.md) · [ADRs](ADRs/)
 
 This is a system for operating RAG workflows, not a prompt-only demo.
+
+**Engineering chain:** Code → Contract → Test → Security → Runtime → Observability → Deployment → Evidence.
