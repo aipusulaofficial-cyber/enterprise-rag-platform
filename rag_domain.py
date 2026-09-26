@@ -28,10 +28,15 @@ def chunk_document(document_id: str, text: str, size: int = 512) -> list[Chunk]:
     if not document_id.strip() or not text.strip() or size < 32:
         raise ValueError("invalid document")
     words = text.split()
-    return [Chunk(document_id, " ".join(words[i : i + size]), i // size) for i in range(0, len(words), size)]
+    return [
+        Chunk(document_id, " ".join(words[i : i + size]), i // size)
+        for i in range(0, len(words), size)
+    ]
 
 
-def lexical_retrieve(query: str, chunks: list[Chunk], top_k: int = 5) -> list[tuple[Chunk, float]]:
+def lexical_retrieve(
+    query: str, chunks: list[Chunk], top_k: int = 5
+) -> list[tuple[Chunk, float]]:
     terms = set(query.lower().split())
     if not terms or top_k < 1:
         return []
@@ -46,6 +51,7 @@ def lexical_retrieve(query: str, chunks: list[Chunk], top_k: int = 5) -> list[tu
 
 class HashEmbedder:
     """Dependency-free deterministic embedding adapter for local/reference deployments."""
+
     def __init__(self, dimensions: int = 256) -> None:
         if dimensions < 32:
             raise ValueError("dimensions must be >= 32")
@@ -61,6 +67,7 @@ class HashEmbedder:
 
 class InMemoryVectorStore:
     """Vector-store abstraction with deterministic cosine similarity."""
+
     def __init__(self, embedder: Embedder | None = None) -> None:
         self.embedder = embedder or HashEmbedder()
         self._items: list[tuple[Chunk, list[float]]] = []
@@ -77,7 +84,10 @@ class InMemoryVectorStore:
             score = sum(a * b for a, b in zip(q, vector))
             if score > 0:
                 hits.append(RetrievalHit(chunk, score))
-        return sorted(hits, key=lambda x: (-x.score, x.chunk.document_id, x.chunk.index))[:top_k]
+        return sorted(
+            hits,
+            key=lambda x: (-x.score, x.chunk.document_id, x.chunk.index),
+        )[:top_k]
 
 
 class ScoreReranker:
@@ -85,5 +95,9 @@ class ScoreReranker:
         terms = set(query.lower().split())
         return sorted(
             hits,
-            key=lambda h: (-len(terms & set(h.chunk.text.lower().split())), -h.score, h.chunk.index),
+            key=lambda h: (
+                -len(terms & set(h.chunk.text.lower().split())),
+                -h.score,
+                h.chunk.index,
+            ),
         )
