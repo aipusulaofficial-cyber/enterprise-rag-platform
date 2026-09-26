@@ -1,29 +1,28 @@
 # Enterprise RAG Platform
 
-**Principal-level reference implementation** focused on retrieval-augmented generation boundaries, adapter isolation, deterministic failure handling, and production readiness.
+A retrieval-augmented generation platform that separates retrieval, provider adapters, generation and operational controls into explicit boundaries.
 
-## Engineering intent
-- Clear domain boundaries and replaceable infrastructure adapters
-- Explicit contracts, validation, and failure semantics
-- Deterministic tests with external dependencies isolated
-- Operational readiness through health checks, CI, and security validation
-- Architecture decisions documented so trade-offs are reviewable
+## RAG lifecycle
+```text
+query -> request contract -> retrieval -> context assembly -> generation -> validated response
+              |                 |             |                |
+           policy          retriever       provenance       model adapter
+```
 
-## System design
-The repository is structured around a small set of explicit responsibilities rather than framework-driven coupling. Request/event handling, domain policy, infrastructure adapters, and operational concerns are kept separable so individual components can evolve without forcing a system-wide rewrite.
+## Core contracts
+- Query inputs are validated before retrieval.
+- Retrieval providers are replaceable adapters.
+- Context assembly is distinct from model invocation.
+- Dependency failures are explicit and do not become fabricated answers.
+- Operational context follows the request through the pipeline.
 
-## Quality bar
-- **Correctness:** contract and edge-case tests cover expected and failure paths
-- **Reliability:** bounded work, explicit timeouts/failures, and health signals where applicable
-- **Security:** least-privilege boundaries, input validation, and safe defaults
-- **Observability:** correlation/context propagation and actionable operational signals
-- **Delivery:** reproducible CI validation before changes are considered complete
+## Reliability
+External stores and model providers are isolated from domain logic. Timeouts, failure paths and health behavior are part of the production contract.
 
-## Principal engineering contract
-See [docs/PRINCIPAL-ENGINEERING.md](docs/PRINCIPAL-ENGINEERING.md) for the reviewable engineering contract, NFRs, and change-safety checklist.
+## Security
+Input validation, least-privilege boundaries and security CI protect the service boundary. Sensitive provider credentials are configuration concerns, not application output.
 
-## Architecture & decisions
-See [ARCHITECTURE.md](ARCHITECTURE.md) and the ADRs directory for system boundaries, key trade-offs, and extension points.
+## Evidence
+[ARCHITECTURE.md](ARCHITECTURE.md) · [docs/PRINCIPAL-ENGINEERING.md](docs/PRINCIPAL-ENGINEERING.md) · [ADRs](ADRs/)
 
-## Engineering principle
-The goal is not to maximize framework complexity; it is to make important behavior **explicit, testable, observable, and replaceable**.
+This is a system for operating RAG workflows, not a prompt-only demo.
