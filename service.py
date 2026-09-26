@@ -17,9 +17,14 @@ app.add_middleware(PrincipalObservabilityMiddleware)
 tracer = trace.get_tracer("enterprise-rag-platform")
 
 
+class RetrievePayload(BaseModel):
+    text: str = Field(default="", max_length=100_000)
+    query: str | None = Field(default=None, min_length=1, max_length=2_000)
+
+
 class RetrieveRequest(BaseModel):
     key: str = Field(min_length=1, max_length=128)
-    payload: dict = Field(default_factory=dict, max_length=32)
+    payload: RetrievePayload = Field(default_factory=RetrievePayload)
 
 
 @app.get("/health/live")
@@ -37,8 +42,8 @@ def handle(request: RetrieveRequest):
     with tracer.start_as_current_span("rag.retrieve") as span:
         span.set_attribute("rag.document_id", request.key)
         try:
-            text = request.payload.get("text", "")
-            query = request.payload.get("query", request.key)
+            text = request.payload.text
+            query = request.payload.query or request.key
             chunks = chunk_document(request.key, text)
             hits = lexical_retrieve(query, chunks)
             logger.info(
