@@ -1,23 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata: {name: enterprise-rag-platform}
+metadata: {name: enterprise-rag-platform, namespace: ai-platform}
 spec:
  replicas: 2
  selector: {matchLabels: {app: enterprise-rag-platform}}
  template:
   metadata: {labels: {app: enterprise-rag-platform}}
   spec:
+   securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, seccompProfile: {type: RuntimeDefault}}
    containers:
     - name: api
-      image: enterprise-rag-platform:latest
+      image: enterprise-rag-platform:0.1.0
+      imagePullPolicy: IfNotPresent
       ports: [{containerPort: 8000}]
+      securityContext:
+       allowPrivilegeEscalation: false
+       readOnlyRootFilesystem: true
+       capabilities: {drop: [ALL]}
+       seccompProfile: {type: RuntimeDefault}
       readinessProbe: {httpGet: {path: /health/ready, port: 8000}}
       livenessProbe: {httpGet: {path: /health/live, port: 8000}}
       resources: {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: "1", memory: 512Mi}}
 ---
 apiVersion: v1
 kind: Service
-metadata: {name: enterprise-rag-platform}
+metadata: {name: enterprise-rag-platform, namespace: ai-platform}
 spec:
  selector: {app: enterprise-rag-platform}
  ports: [{port: 80, targetPort: 8000}]
