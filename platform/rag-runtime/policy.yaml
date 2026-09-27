@@ -1,0 +1,11 @@
+version: "1"
+retrieval:
+  top_k: 10
+  require_versioned_index: true
+quality:
+  require_retrieval_evidence: true
+  require_citation_validation: true
+observability:
+  trace_required: true
+audit:
+  required: true
