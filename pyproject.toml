@@ -17,4 +17,4 @@ testpaths = ["tests"]
 pythonpath = ["."]
 
 [tool.setuptools]
-py-modules = ["service", "rag_domain"]
+py-modules=["observability","otel_setup","rag_domain","rag_platform","resilience","service"]
