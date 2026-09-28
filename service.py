@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from observability import PrincipalObservabilityMiddleware, configure_observability, get_logger
 from rag_domain import InMemoryVectorStore, ScoreReranker, chunk_document
 from runtime_evidence import request_id_from_headers, runtime_evidence
+
 configure_observability()
 logger = get_logger(__name__)
 app = FastAPI(title="enterprise-rag-platform", version="1.1.0")
