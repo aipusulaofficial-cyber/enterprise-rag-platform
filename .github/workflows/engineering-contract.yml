@@ -22,3 +22,5 @@ jobs:
 # Shared contract dependencies refreshed.
 
 # Async/property test dependencies refreshed.
+
+# Runtime schema validation refresh.
