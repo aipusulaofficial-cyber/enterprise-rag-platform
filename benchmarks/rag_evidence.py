@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from rag_domain import (
+from rag_domain import (  # noqa: I001
     Chunk,
     InMemoryVectorStore,
     ScoreReranker,
