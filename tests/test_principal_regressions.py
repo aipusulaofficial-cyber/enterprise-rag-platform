@@ -13,6 +13,7 @@ def test_nonpositive_retrieval_limit_rejected():
     with pytest.raises(ValueError):
         retriever.retrieve("one", k=0)
 
+
 def test_multilingual_lexical_tokens_have_stable_normalization():
     from rag_platform import lexical_score
 
