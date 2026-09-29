@@ -36,7 +36,7 @@ class RetrievalThresholdError(RAGError):
 
 
 def chunk_document(doc: Document, size: int = 120, overlap: int = 20) -> list[Chunk]:
-    if size <= overlap or size <= 0:
+    if size <= overlap or size <= 0 or overlap < 0:
         raise ValueError("size must be > overlap >= 0")
     words = doc.text.split()
     out = []
@@ -62,6 +62,8 @@ class Retriever:
     def retrieve(self, query: str, k: int = 5) -> list[Citation]:
         if not query.strip():
             raise ValueError("query is required")
+        if k < 1:
+            raise ValueError("k must be positive")
         scored = sorted(
             ((lexical_score(query, c.text), c) for c in self.chunks),
             key=lambda x: (-x[0], x[1].id),
