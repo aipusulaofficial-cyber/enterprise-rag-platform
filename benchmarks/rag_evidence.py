@@ -29,10 +29,7 @@ CASES = [
 
 
 def run() -> dict[str, object]:
-    chunks = [
-        Chunk(document_id=name, text=text, index=0)
-        for name, text, _ in CASES
-    ]
+    chunks = [Chunk(document_id=name, text=text, index=0) for name, text, _ in CASES]
     store = InMemoryVectorStore()
     store.upsert(chunks)
     reranker = ScoreReranker()
