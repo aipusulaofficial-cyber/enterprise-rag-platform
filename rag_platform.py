@@ -1,8 +1,10 @@
 """Enterprise RAG domain core: deterministic retrieval contracts with citations."""
 
+import math
 import re
 import sys
 from dataclasses import dataclass
+from unicodedata import combining, normalize
 
 
 @dataclass(frozen=True)
@@ -49,14 +51,22 @@ def chunk_document(doc: Document, size: int = 120, overlap: int = 20) -> list[Ch
     return out
 
 
+def _lexical_tokens(value: str) -> set[str]:
+    folded = normalize("NFKD", value.casefold())
+    text = "".join(char for char in folded if not combining(char))
+    return set(re.findall(r"[^\\W_]+", text, flags=re.UNICODE))
+
+
 def lexical_score(query: str, text: str) -> float:
-    q = set(re.findall(r"[a-z0-9]+", query.lower()))
-    t = re.findall(r"[a-z0-9]+", text.lower())
-    return len(q & set(t)) / max(len(q), 1)
+    q = _lexical_tokens(query)
+    t = _lexical_tokens(text)
+    return len(q & t) / max(len(q), 1)
 
 
 class Retriever:
     def __init__(self, chunks: list[Chunk], threshold: float = 0.1):
+        if not math.isfinite(threshold) or not 0 <= threshold <= 1:
+            raise ValueError("retrieval threshold must be finite and between 0 and 1")
         self.chunks, self.threshold = chunks, threshold
 
     def retrieve(self, query: str, k: int = 5) -> list[Citation]:
