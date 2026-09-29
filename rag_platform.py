@@ -54,7 +54,7 @@ def chunk_document(doc: Document, size: int = 120, overlap: int = 20) -> list[Ch
 def _lexical_tokens(value: str) -> set[str]:
     folded = normalize("NFKD", value.casefold())
     text = "".join(char for char in folded if not combining(char))
-    return set(re.findall(r"[^\\W_]+", text, flags=re.UNICODE))
+    return set(re.findall(r"[^\W_]+", text, flags=re.UNICODE))
 
 
 def lexical_score(query: str, text: str) -> float:
