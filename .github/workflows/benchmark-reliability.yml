@@ -18,12 +18,26 @@ jobs:
         run: python -m pip install --disable-pip-version-check pytest
       - name: Failure injection tests
         run: python -m pytest reliability/test_failure_injection.py -q
-      - name: Benchmark harness
+      - name: RAG retrieval evidence
         run: |
-          mkdir -p artifacts
-          python benchmarks/run_benchmark.py --iterations 1000 | tee artifacts/benchmark.json
+          python benchmarks/rag_evidence.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("artifacts/rag-retrieval-evidence.json").read_text(encoding="utf-8"))
+          if report["error_rate"] != 0:
+              raise SystemExit(f"RAG evidence gate failed: error_rate={report['error_rate']}")
+          if report["recall_at_3"] < 1.0:
+              raise SystemExit(f"RAG retrieval gate failed: recall_at_3={report['recall_at_3']}")
+          print(
+              f"RAG evidence passed: recall_at_3={report['recall_at_3']:.3f}, "
+              f"p95_ms={report['latency_ms']['p95']:.3f}"
+          )
+          PY
       - name: Upload measured evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: benchmark-evidence
-          path: artifacts/benchmark.json
+          name: rag-retrieval-evidence
+          path: artifacts/rag-retrieval-evidence.json
+          if-no-files-found: error
