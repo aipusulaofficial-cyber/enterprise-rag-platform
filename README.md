@@ -1,5 +1,10 @@
 # Enterprise RAG Platform
 
+[![CI](https://github.com/aipusulaofficial-cyber/enterprise-rag-platform/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/aipusulaofficial-cyber/enterprise-rag-platform/actions/workflows/ci.yml)
+[![Production Tests](https://github.com/aipusulaofficial-cyber/enterprise-rag-platform/actions/workflows/production-tests.yml/badge.svg?branch=main)](https://github.com/aipusulaofficial-cyber/enterprise-rag-platform/actions/workflows/production-tests.yml)
+[![Security / SBOM](https://github.com/aipusulaofficial-cyber/enterprise-rag-platform/actions/workflows/security-sbom.yml/badge.svg?branch=main)](https://github.com/aipusulaofficial-cyber/enterprise-rag-platform/actions/workflows/security-sbom.yml)
+
+
 A retrieval-augmented generation platform that separates retrieval, provider adapters, generation and operational controls into explicit boundaries.
 
 ## RAG lifecycle
