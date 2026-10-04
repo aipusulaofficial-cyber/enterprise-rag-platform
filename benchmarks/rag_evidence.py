@@ -8,14 +8,15 @@ from __future__ import annotations
 
 import json
 import statistics
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi.testclient import TestClient  # noqa: E402
+
 from service import app  # noqa: E402
 
 
