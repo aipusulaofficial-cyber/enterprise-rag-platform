@@ -1,3 +1,4 @@
+import hashlib
 import math
 from dataclasses import dataclass
 from typing import Protocol
@@ -57,8 +58,10 @@ class HashEmbedder:
 
     def embed(self, text: str) -> list[float]:
         vector = [0.0] * self.dimensions
-        for token in text.lower().split():
-            vector[hash(token) % self.dimensions] += 1.0
+        for token in text.casefold().split():
+            digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
+            bucket = int.from_bytes(digest, "big") % self.dimensions
+            vector[bucket] += 1.0
         norm = math.sqrt(sum(x * x for x in vector)) or 1.0
         return [x / norm for x in vector]
 
