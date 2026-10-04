@@ -31,11 +31,7 @@ def run(repetitions: int = 25, workers: int = 8) -> dict[str, object]:
     if repetitions < 1 or workers < 1:
         raise ValueError("repetitions and workers must be positive")
 
-    work = [
-        (name, query, expected)
-        for _ in range(repetitions)
-        for name, query, expected in CASES
-    ]
+    work = [(name, query, expected) for _ in range(repetitions) for name, query, expected in CASES]
     latencies: list[float] = []
     failures = 0
     grounded = 0
