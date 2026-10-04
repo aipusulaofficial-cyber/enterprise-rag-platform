@@ -16,8 +16,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi.testclient import TestClient  # noqa: E402
+from service import app  # noqa: E402
 
-from service import app  # noqa: E402, I001
 
 
 CASES = [
