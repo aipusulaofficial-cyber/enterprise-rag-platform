@@ -1,23 +1,20 @@
-"""Deterministic RAG retrieval evidence for CI.
+"""Concurrent HTTP retrieval evidence for CI.
 
-Measures the repository's actual in-memory retrieval path. This is a CI
-reference measurement, not a production performance claim.
+Exercises the actual FastAPI retrieval boundary with deterministic queries.
+This is a repeatable CI acceptance benchmark, not a production hardware claim.
 """
 
 from __future__ import annotations
 
 import json
-import sys
+import statistics
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from fastapi.testclient import TestClient
 
-from rag_domain import (  # noqa: I001
-    Chunk,
-    InMemoryVectorStore,
-    ScoreReranker,
-)
+from service import app
 
 
 CASES = [
@@ -28,42 +25,70 @@ CASES = [
 ]
 
 
-def run() -> dict[str, object]:
-    chunks = [Chunk(document_id=name, text=text, index=0) for name, text, _ in CASES]
-    store = InMemoryVectorStore()
-    store.upsert(chunks)
-    reranker = ScoreReranker()
+def run(repetitions: int = 25, workers: int = 8) -> dict[str, object]:
+    if repetitions < 1 or workers < 1:
+        raise ValueError("repetitions and workers must be positive")
 
+    work = [
+        (name, query, expected)
+        for _ in range(repetitions)
+        for name, query, expected in CASES
+    ]
     latencies: list[float] = []
-    errors = 0
-    hits_at_3 = 0
+    failures = 0
+    grounded = 0
 
-    for _, query, expected_document in CASES:
+    def one(case: tuple[str, str, str]) -> tuple[float, bool, bool]:
+        name, query, expected = case
         started = time.perf_counter()
-        try:
-            hits = reranker.rerank(query, store.search(query, top_k=3))
-            if any(hit.chunk.document_id == expected_document for hit in hits):
-                hits_at_3 += 1
-        except Exception:
-            errors += 1
-        latencies.append((time.perf_counter() - started) * 1000)
+        with TestClient(app) as client:
+            response = client.post(
+                "/v1/retrieve",
+                json={
+                    "key": name,
+                    "payload": {"text": query, "query": expected},
+                },
+            )
+        latency = (time.perf_counter() - started) * 1000
+        if response.status_code != 200:
+            return latency, False, False
+        body = response.json()
+        hit = any(
+            item.get("document_id") == expected and item.get("score", 0) > 0
+            for item in body.get("results", [])
+        )
+        return latency, True, hit
 
+    wall_started = time.perf_counter()
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(one, case) for case in work]
+        for future in as_completed(futures):
+            latency, ok, hit = future.result()
+            latencies.append(latency)
+            failures += int(not ok)
+            grounded += int(hit)
+    wall_s = time.perf_counter() - wall_started
     ordered = sorted(latencies)
 
     def pct(q: float) -> float:
-        return ordered[min(len(ordered) - 1, int(len(ordered) * q))]
+        index = min(len(ordered) - 1, max(0, int((len(ordered) - 1) * q)))
+        return ordered[index]
 
+    total = len(work)
     return {
-        "cases": len(CASES),
-        "errors": errors,
-        "error_rate": errors / len(CASES),
-        "recall_at_3": hits_at_3 / len(CASES),
+        "requests": total,
+        "workers": workers,
+        "failures": failures,
+        "error_rate": failures / total,
+        "recall_at_1": grounded / total,
+        "throughput_rps": round(total / wall_s, 2),
         "latency_ms": {
-            "p50": round(pct(0.50), 3),
+            "p50": round(statistics.median(ordered), 3),
             "p95": round(pct(0.95), 3),
+            "p99": round(pct(0.99), 3),
         },
-        "workload": "InMemoryVectorStore + ScoreReranker",
-        "measurement": "CI reference-path retrieval benchmark; not a production performance claim",
+        "workload": "FastAPI TestClient -> /v1/retrieve -> chunk/store/search/rerank",
+        "measurement": "repeatable CI HTTP retrieval acceptance benchmark; not a production hardware claim",
     }
 
 
