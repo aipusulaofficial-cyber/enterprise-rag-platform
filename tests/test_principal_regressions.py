@@ -29,6 +29,7 @@ def test_invalid_retrieval_threshold_rejected(threshold):
 
 def test_hash_embedder_has_stable_known_bucket_mapping():
     import hashlib
+
     from rag_domain import HashEmbedder
 
     token = "stable"
