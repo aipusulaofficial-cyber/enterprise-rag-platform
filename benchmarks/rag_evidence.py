@@ -6,6 +6,7 @@ This is a repeatable CI acceptance benchmark, not a production hardware claim.
 
 from __future__ import annotations
 
+import importlib
 import json
 import statistics
 import sys
@@ -13,14 +14,10 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+from fastapi.testclient import TestClient
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from fastapi.testclient import TestClient  # noqa: E402
-
-# isort: split
-from service import app  # noqa: E402
-
-
+app = importlib.import_module("service").app
 
 CASES = [
     ("security", "security controls encryption audit logging", "security"),
