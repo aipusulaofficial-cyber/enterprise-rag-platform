@@ -34,7 +34,10 @@ def test_hash_embedder_has_stable_known_bucket_mapping():
 
     token = "stable"
     dimensions = 64
-    expected = int.from_bytes(hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest(), "big") % dimensions
+    expected = (
+        int.from_bytes(hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest(), "big")
+        % dimensions
+    )
     vector = HashEmbedder(dimensions).embed(token)
     assert vector[expected] == 1.0
     assert sum(1 for value in vector if value) == 1
