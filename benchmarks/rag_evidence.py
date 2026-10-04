@@ -11,10 +11,12 @@ import statistics
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+import sys
 
-from fastapi.testclient import TestClient
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from service import app
+from fastapi.testclient import TestClient  # noqa: E402
+from service import app  # noqa: E402
 
 
 CASES = [
