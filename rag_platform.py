@@ -47,6 +47,8 @@ def chunk_document(doc: Document, size: int = 120, overlap: int = 20) -> list[Ch
         text = " ".join(words[i : i + size])
         if not text:
             break
+        if i > 0 and i + overlap >= len(words):
+            break
         out.append(Chunk(f"{doc.id}:{i}", doc.id, text, doc.source))
     return out
 
@@ -72,8 +74,8 @@ class Retriever:
     def retrieve(self, query: str, k: int = 5) -> list[Citation]:
         if not query.strip():
             raise ValueError("query is required")
-        if k < 1:
-            raise ValueError("k must be positive")
+        if isinstance(k, bool) or not isinstance(k, int) or k < 1:
+            raise ValueError("k must be a positive integer")
         scored = sorted(
             ((lexical_score(query, c.text), c) for c in self.chunks),
             key=lambda x: (-x[0], x[1].id),
